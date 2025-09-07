@@ -1,6 +1,6 @@
 # 🗄 DYTUI: DynamoDB CLI
 
-DyTUI is dynamoDB CLI.It is the terminal user interface application built with the (tview)[https://github.com/rivo/tview].
+DyTUI is dynamoDB CLI.It is the terminal user interface application built with the [tview](https://github.com/rivo/tview).
 
 #### Current status
 
