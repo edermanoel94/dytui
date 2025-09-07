@@ -1,6 +1,7 @@
 package main
 
 import (
+	"dytui/internal/gui"
 	"flag"
 	"fmt"
 	"os"
@@ -55,6 +56,7 @@ func run() {
 		printVersion()
 		os.Exit(0)
 	case fProfile != "":
+		gui.Start()
 		os.Exit(0)
 	default:
 		fmt.Fprintf(os.Stdout, "flag provided but not defined %s \n", flag.Args()[0])
