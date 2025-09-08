@@ -17,7 +17,6 @@ Flags:
 	-p, --profile        select aws profile
 
 Examples:
-  cat comma.csv              | c2j | jq        
   cat semicolon.csv          | c2j --delimiter ";" | jq
   cat csv_without_header.csv | c2j --no-header | jq`
 )
@@ -48,14 +47,13 @@ func main() {
 
 func run() {
 	switch {
-
 	case fHelp:
 		printUsage()
 		os.Exit(0)
 	case fVersion:
 		printVersion()
 		os.Exit(0)
-	case fProfile != "":
+	case fProfile == "":
 		gui.Start()
 		os.Exit(0)
 	default:

@@ -1,0 +1,28 @@
+{
+  "UserId": { "S": "user-123" },
+  "Email": { "S": "user123@example.com" },
+  "Age": { "N": "29" },
+  "Active": { "BOOL": true },
+  "CreatedAt": { "S": "2025-09-07T12:34:56Z" },
+  "Profile": {
+    "M": {
+      "FirstName": { "S": "Eder" },
+      "LastName": { "S": "Manoel" },
+      "Preferences": {
+        "M": {
+          "Theme": { "S": "dark" },
+          "Notifications": { "BOOL": false }
+        }
+      }
+    }
+  },
+  "Tags": {
+    "L": [
+      { "S": "golang" },
+      { "S": "devops" },
+      { "S": "aws" }
+    ]
+  },
+  "LoginCount": { "N": "42" },
+  "LastLogin": { "S": "2025-09-06T21:15:00Z" }
+}
