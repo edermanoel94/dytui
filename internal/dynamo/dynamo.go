@@ -2,7 +2,8 @@ package dynamo
 
 import (
 	"context"
-	"log"
+	"errors"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -11,34 +12,38 @@ import (
 )
 
 var (
-	dynamodbClient *dynamodb.Client
+	ErrRegionNotDefined = errors.New("region is not defined")
 )
 
-func init() {
+type Session struct {
+	client *dynamodb.Client
+}
 
-	resolver := aws.EndpointResolverWithOptionsFunc(
-		func(service, region string, _ ...interface{}) (aws.Endpoint, error) {
-			return aws.Endpoint{
-				URL:           "http://localhost:4566", // LocalStack
-				SigningRegion: "us-east-1",
-			}, nil
-		})
+func New(ctx context.Context, profile, region string) (*Session, error) {
+
+	if len(region) == 0 {
+		region = os.Getenv("AWS_REGION")
+
+		if len(region) == 0 {
+			return nil, ErrRegionNotDefined
+		}
+	}
 
 	cfg, err := config.LoadDefaultConfig(context.Background(),
-		config.WithRegion("us-east-1"),
-		config.WithEndpointResolverWithOptions(resolver),
+		config.WithRegion(region),
+		config.WithSharedConfigProfile(profile),
 	)
 
 	if err != nil {
-		log.Fatalf("unable to load SDK config, %v", err)
+		return nil, err
 	}
 
-	dynamodbClient = dynamodb.NewFromConfig(cfg)
+	return &Session{client: dynamodb.NewFromConfig(cfg)}, nil
 }
 
-func Scan(ctx context.Context, tableName string) ([]map[string]any, error) {
+func (s *Session) Scan(ctx context.Context, tableName string) ([]map[string]any, error) {
 
-	output, err := dynamodbClient.Scan(ctx, &dynamodb.ScanInput{
+	output, err := s.client.Scan(ctx, &dynamodb.ScanInput{
 		TableName: aws.String("Employees"),
 	})
 
@@ -64,9 +69,9 @@ func Scan(ctx context.Context, tableName string) ([]map[string]any, error) {
 	return result, nil
 }
 
-func Query(ctx context.Context, tableName string) ([]map[string]any, error) {
+func (s *Session) Query(ctx context.Context, tableName string) ([]map[string]any, error) {
 
-	output, err := dynamodbClient.Scan(ctx, &dynamodb.ScanInput{
+	output, err := s.client.Scan(ctx, &dynamodb.ScanInput{
 		TableName: aws.String("Employees"),
 	})
 
@@ -92,9 +97,9 @@ func Query(ctx context.Context, tableName string) ([]map[string]any, error) {
 	return result, nil
 }
 
-func ListTables(ctx context.Context) ([]string, error) {
+func (s *Session) ListTables(ctx context.Context) ([]string, error) {
 
-	result, err := dynamodbClient.ListTables(ctx, &dynamodb.ListTablesInput{})
+	result, err := s.client.ListTables(ctx, &dynamodb.ListTablesInput{})
 
 	if err != nil {
 		return nil, err

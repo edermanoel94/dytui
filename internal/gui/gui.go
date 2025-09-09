@@ -27,6 +27,10 @@ type Gui struct {
 	result   *tview.Table
 }
 
+func New() *Gui {
+	return &Gui{}
+}
+
 func Start() {
 
 	ctx := context.Background()
