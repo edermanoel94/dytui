@@ -31,9 +31,9 @@ func LoadAWSCredentials() ([]Credentials, error) {
 
 	defer file.Close()
 
-	profiles := make([]Credentials, 0)
-
-	var currentProfile string
+	credentials := make([]Credentials, 0)
+	credentialsMap := make(map[string]Credentials)
+	var currentProfileName string
 
 	scanner := bufio.NewScanner(file)
 
@@ -45,31 +45,32 @@ func LoadAWSCredentials() ([]Credentials, error) {
 			continue
 		}
 
-		var credentials Credentials
-
 		// profile header
 		if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
-			currentProfile = strings.Trim(line, "[]")
-			credentials.Name = currentProfile
+			currentProfileName = strings.Trim(line, "[]")
+			credentialsMap[currentProfileName] = Credentials{Name: currentProfileName}
 			continue
 		}
 
 		// key = value
-		if credentials.Name != "" && strings.Contains(line, "=") {
+		if currentProfileName != "" && strings.Contains(line, "=") {
 			parts := strings.SplitN(line, "=", 2)
+
 			key := strings.TrimSpace(parts[0])
 			value := strings.TrimSpace(parts[1])
 
+			cred := credentialsMap[currentProfileName]
+
 			switch key {
 			case "aws_access_key_id":
-				credentials.AccessKeyID = value
+				cred.AccessKeyID = value
 			case "aws_secret_access_key":
-				credentials.SecretAccessKey = value
+				cred.SecretAccessKey = value
 			case "region":
-				credentials.Region = value
+				cred.Region = value
 			}
 
-			profiles = append(profiles, credentials)
+			credentialsMap[currentProfileName] = cred
 		}
 	}
 
@@ -77,5 +78,9 @@ func LoadAWSCredentials() ([]Credentials, error) {
 		return nil, err
 	}
 
-	return profiles, nil
+	for _, cred := range credentialsMap {
+		credentials = append(credentials, cred)
+	}
+
+	return credentials, nil
 }

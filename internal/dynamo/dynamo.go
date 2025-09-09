@@ -64,6 +64,34 @@ func Scan(ctx context.Context, tableName string) ([]map[string]any, error) {
 	return result, nil
 }
 
+func Query(ctx context.Context, tableName string) ([]map[string]any, error) {
+
+	output, err := dynamodbClient.Scan(ctx, &dynamodb.ScanInput{
+		TableName: aws.String("Employees"),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	items := output.Items
+
+	result := make([]map[string]any, 0)
+
+	for _, item := range items {
+
+		var m map[string]any
+
+		if err := attributevalue.UnmarshalMap(item, &m); err != nil {
+			return nil, err
+		}
+
+		result = append(result, m)
+	}
+
+	return result, nil
+}
+
 func ListTables(ctx context.Context) ([]string, error) {
 
 	result, err := dynamodbClient.ListTables(ctx, &dynamodb.ListTablesInput{})

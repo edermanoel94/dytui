@@ -1,0 +1,43 @@
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    ports:
+      - "4566:4566"            # Edge port (all services)
+      - "4510-4559:4510-4559"  # Pro services (not strictly needed here)
+    environment:
+      - SERVICES=dynamodb,s3
+      - DEBUG=1
+      - AWS_DEFAULT_REGION=us-east-1
+      - LS_LOG=warning
+    volumes:
+      - ./localstack/data:/var/lib/localstack
+      # If you want LocalStack to auto-run scripts on ready, mount a folder below:
+      # - ./localstack/init:/etc/localstack/init/ready.d
+
+  # Optional UI for inspecting tables (http://localhost:8001)
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin:latest
+    container_name: dynamodb-admin
+    environment:
+      - DYNAMO_ENDPOINT=http://localstack:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    ports:
+      - "8001:8001"
+
+  # One-off seeder that creates 5 tables + random data
+  seed:
+    image: python:3.11-slim
+    container_name: seed-dynamo
+    working_dir: /app
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+      - DYNAMO_ENDPOINT=http://localstack:4566
+      - NUM_ITEMS=20            # how many items per table; change as you like
+    volumes:
+      - ./scripts:/app
+    command: /bin/sh -c "pip install --no-cache-dir boto3 && python seed.py"

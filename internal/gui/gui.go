@@ -3,6 +3,7 @@ package gui
 import (
 	"context"
 	"dytui/internal/awsutil"
+	"dytui/internal/controller"
 	"dytui/internal/dynamo"
 	"log"
 
@@ -13,6 +14,18 @@ var (
 	app   *tview.Application
 	pages *tview.Pages
 )
+
+type Gui struct {
+	ctrl controller.Controller
+
+	// View commponents
+	app   *tview.Application
+	pages *tview.Pages
+
+	profiles *tview.List
+	tables   *tview.List
+	result   *tview.Table
+}
 
 func Start() {
 

@@ -23,14 +23,11 @@ Examples:
 
 // flags
 var (
-	fProfile string
 	fVersion bool
 	fHelp    bool
 )
 
 func main() {
-	flag.StringVar(&fProfile, "profile", "", "select aws profile")
-	flag.StringVar(&fProfile, "p", "", "select aws profile")
 	flag.BoolVar(&fVersion, "version", false, "print version")
 	flag.BoolVar(&fVersion, "v", false, "print version")
 	flag.BoolVar(&fHelp, "help", false, "print help")
@@ -53,13 +50,9 @@ func run() {
 	case fVersion:
 		printVersion()
 		os.Exit(0)
-	case fProfile == "":
+	default:
 		gui.Start()
 		os.Exit(0)
-	default:
-		fmt.Fprintf(os.Stdout, "flag provided but not defined %s \n", flag.Args()[0])
-		printUsage()
-		os.Exit(-1)
 	}
 
 }
