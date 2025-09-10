@@ -1,11 +1,7 @@
 package gui
 
 import (
-	"context"
-	"dytui/internal/awsutil"
 	"dytui/internal/controller"
-	"dytui/internal/dynamo"
-	"log"
 
 	"github.com/rivo/tview"
 )
@@ -16,7 +12,7 @@ var (
 )
 
 type Gui struct {
-	ctrl controller.Controller
+	ctrl *controller.Controller
 
 	// View commponents
 	app   *tview.Application
@@ -27,13 +23,13 @@ type Gui struct {
 	result   *tview.Table
 }
 
-func New() *Gui {
-	return &Gui{}
+func New(ctrl *controller.Controller) *Gui {
+	return &Gui{
+		ctrl: ctrl,
+	}
 }
 
-func Start() {
-
-	ctx := context.Background()
+func (g *Gui) Run() error {
 
 	app = tview.NewApplication()
 
@@ -46,23 +42,7 @@ func Start() {
 	result := tview.NewTable()
 	result.SetBorder(true)
 
-	credentials, err := awsutil.LoadAWSCredentials()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, cred := range credentials {
-		profiles.AddItem(cred.Name, "", 0, nil)
-	}
-
-	tableNames, err := dynamo.ListTables(ctx)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, table := range tableNames {
+	for _, table := range []string{} {
 		tables.AddItem(table, "", 0, nil)
 	}
 
@@ -77,6 +57,7 @@ func Start() {
 	app.SetRoot(pages, true)
 
 	if err := app.Run(); err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }

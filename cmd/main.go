@@ -1,6 +1,7 @@
 package main
 
 import (
+	"dytui/internal/controller"
 	"dytui/internal/gui"
 	"flag"
 	"fmt"
@@ -51,10 +52,24 @@ func run() {
 		printVersion()
 		os.Exit(0)
 	default:
-		gui.Start()
-		os.Exit(0)
+		fmt.Fprintf(os.Stdout, "flag provided but not defined %s \n", flag.Args()[0])
+		printUsage()
+		os.Exit(-1)
 	}
 
+	ctrl, err := controller.New()
+
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "controller couldn't initialize, error: %s\n", err.Error())
+		os.Exit(-1)
+	}
+
+	gui := gui.New(ctrl)
+
+	if err := gui.Run(); err != nil {
+		fmt.Fprintf(os.Stdout, "gui couldn't initialize, error: %s\n", err.Error())
+		os.Exit(-1)
+	}
 }
 
 func printVersion() {
