@@ -15,48 +15,51 @@ type Gui struct {
 	ctrl *controller.Controller
 
 	// View commponents
-	app   *tview.Application
-	pages *tview.Pages
+	App   *tview.Application
+	Pages *tview.Pages
 
-	profiles *tview.List
-	tables   *tview.List
-	result   *tview.Table
+	Profiles *tview.List
+	Tables   *tview.List
+	Result   *tview.Table
 }
 
 func New(ctrl *controller.Controller) *Gui {
-	return &Gui{
+
+	g := &Gui{
 		ctrl: ctrl,
 	}
+
+	g.App = tview.NewApplication()
+
+	g.Profiles = tview.NewList()
+	g.Profiles.SetBorder(true)
+
+	g.Tables = tview.NewList()
+	g.Tables.SetBorder(true)
+
+	g.Result = tview.NewTable()
+	g.Result.SetBorder(true)
+
+	for _, table := range []string{} {
+		g.Tables.AddItem(table, "", 0, nil)
+	}
+
+	flex := tview.NewFlex().
+		AddItem(g.Tables, 0, 1, false).
+		AddItem(g.Profiles, 0, 1, false).
+		AddItem(g.Result, 0, 3, true)
+
+	g.Pages = tview.NewPages().
+		AddPage("DYTUI", flex, true, true)
+
+	g.App.SetRoot(g.Pages, true)
+
+	return g
 }
 
 func (g *Gui) Run() error {
 
-	app = tview.NewApplication()
-
-	profiles := tview.NewList()
-	profiles.SetBorder(true)
-
-	tables := tview.NewList()
-	tables.SetBorder(true)
-
-	result := tview.NewTable()
-	result.SetBorder(true)
-
-	for _, table := range []string{} {
-		tables.AddItem(table, "", 0, nil)
-	}
-
-	flex := tview.NewFlex().
-		AddItem(tables, 0, 1, false).
-		AddItem(profiles, 0, 1, false).
-		AddItem(result, 0, 3, true)
-
-	pages := tview.NewPages().
-		AddPage("DYTUI", flex, true, true)
-
-	app.SetRoot(pages, true)
-
-	if err := app.Run(); err != nil {
+	if err := g.App.Run(); err != nil {
 		return err
 	}
 	return nil
