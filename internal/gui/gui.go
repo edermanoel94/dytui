@@ -40,17 +40,7 @@ func New(ctrl *controller.Controller) *Gui {
 	g.Result = tview.NewTable()
 	g.Result.SetBorder(true)
 
-	for _, table := range []string{} {
-		g.Tables.AddItem(table, "", 0, nil)
-	}
-
-	flex := tview.NewFlex().
-		AddItem(g.Tables, 0, 1, false).
-		AddItem(g.Profiles, 0, 1, false).
-		AddItem(g.Result, 0, 3, true)
-
-	g.Pages = tview.NewPages().
-		AddPage("DYTUI", flex, true, true)
+	g.Pages = tview.NewPages()
 
 	g.App.SetRoot(g.Pages, true)
 
