@@ -2,21 +2,41 @@ package awsutil
 
 import (
 	"bufio"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-type Credentials struct {
+var (
+	ErrCredentialNotFound = errors.New("credentials not found in the .aws/credentials")
+)
+
+type Credential struct {
 	Name            string
 	AccessKeyID     string
 	SecretAccessKey string
 	Region          string
 }
 
-// Profiles maps profile names to their credentials
-// LoadAWSCredentials reads the AWS credentials file and parses it into a map of profiles
-func LoadAWSCredentials() ([]Credentials, error) {
+func LoadProfile(profile string) (*Credential, error) {
+
+	credentials, err := loadAWSCredentials()
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, cred := range credentials {
+		if cred.Name == profile {
+			return &cred, nil
+		}
+	}
+
+	return nil, ErrCredentialNotFound
+}
+
+func loadAWSCredentials() ([]Credential, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -31,8 +51,8 @@ func LoadAWSCredentials() ([]Credentials, error) {
 
 	defer file.Close()
 
-	credentials := make([]Credentials, 0)
-	credentialsMap := make(map[string]Credentials)
+	credentials := make([]Credential, 0)
+	credentialsMap := make(map[string]Credential)
 	var currentProfileName string
 
 	scanner := bufio.NewScanner(file)
@@ -48,7 +68,7 @@ func LoadAWSCredentials() ([]Credentials, error) {
 		// profile header
 		if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
 			currentProfileName = strings.Trim(line, "[]")
-			credentialsMap[currentProfileName] = Credentials{Name: currentProfileName}
+			credentialsMap[currentProfileName] = Credential{Name: currentProfileName}
 			continue
 		}
 

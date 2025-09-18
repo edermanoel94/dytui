@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"slices"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -12,6 +13,10 @@ import (
 var (
 	ErrRegionNotDefined  = errors.New("region is not defined")
 	ErrProfileNotDefined = errors.New("profile is not defined")
+)
+
+var (
+	profilesLocally = []string{"default", "localstack", "local"}
 )
 
 type Config struct {
@@ -36,6 +41,16 @@ func New(profile, region string) (*Config, error) {
 		config.WithRegion(region),
 		config.WithSharedConfigProfile(profile),
 	)
+
+	if slices.Contains(profilesLocally, profile) {
+		cfg.EndpointResolverWithOptions = aws.EndpointResolverWithOptionsFunc(
+			func(service, region string, _ ...interface{}) (aws.Endpoint, error) {
+				return aws.Endpoint{
+					URL:           "http://localhost:4566", // LocalStack
+					SigningRegion: region,
+				}, nil
+			})
+	}
 
 	if err != nil {
 		return nil, err

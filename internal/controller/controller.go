@@ -12,44 +12,30 @@ var (
 )
 
 type Controller struct {
-	sessions       map[string]*dynamo.Session
+	currentProfile string
 	currentSession *dynamo.Session
 }
 
-func New() (*Controller, error) {
+func New(awsProfile string) (*Controller, error) {
 
-	credentials, err := awsutil.LoadAWSCredentials()
+	cred, err := awsutil.LoadProfile(awsProfile)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if len(credentials) == 0 {
-		return nil, ErrEmptyCredentials
+	awsConfig, err := config.New(cred.Name, cred.Region)
+
+	if err != nil {
+		return nil, err
 	}
 
 	ctrl := &Controller{
-		sessions: make(map[string]*dynamo.Session),
-	}
-
-	for _, cred := range credentials {
-
-		awsConfig, err := config.New(cred.Name, cred.Region)
-
-		if err != nil {
-			return nil, err
-		}
-
-		dynamoSession := dynamo.New(awsConfig)
-
-		ctrl.sessions[cred.Name] = dynamoSession
+		currentProfile: awsProfile,
+		currentSession: dynamo.New(awsConfig),
 	}
 
 	return ctrl, nil
-}
-
-func (c *Controller) Switch() {
-
 }
 
 func (c *Controller) Current() *dynamo.Session {
